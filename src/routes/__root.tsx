@@ -72,14 +72,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "Bloom Routine" },
+      { name: "description", content: "Bloom Routine Garden is a full-stack web app that gamifies task management with a charming, animated spring theme." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "Bloom Routine" },
+      { property: "og:description", content: "Bloom Routine Garden is a full-stack web app that gamifies task management with a charming, animated spring theme." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Bloom Routine" },
+      { name: "twitter:description", content: "Bloom Routine Garden is a full-stack web app that gamifies task management with a charming, animated spring theme." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d197724d-38cb-4371-a45a-dbc0d290cc59/id-preview-e9150e64--2312cef8-8016-48e1-b84d-b9e773ce0808.lovable.app-1778353800798.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d197724d-38cb-4371-a45a-dbc0d290cc59/id-preview-e9150e64--2312cef8-8016-48e1-b84d-b9e773ce0808.lovable.app-1778353800798.png" },
     ],
     links: [
       {
