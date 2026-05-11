@@ -103,6 +103,15 @@ export function Hud({ state, todayMood, onOpenAchievements, onOpenRewards }: Pro
       >
         <Trophy className="h-4 w-4 text-amber-500" />
       </button>
+
+      <button
+        onClick={() => signOut()}
+        className="grid h-8 w-8 place-items-center rounded-full bg-white/70 transition hover:bg-white"
+        aria-label="Sign out"
+        title="Sign out"
+      >
+        <LogOut className="h-4 w-4 text-foreground/60" />
+      </button>
     </motion.div>
   );
 }
