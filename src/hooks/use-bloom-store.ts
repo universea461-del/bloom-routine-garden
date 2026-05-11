@@ -79,7 +79,7 @@ export function useBloomStore() {
     saveTimer.current = setTimeout(() => {
       supabase
         .from("garden_states")
-        .upsert({ user_id: user.id, state: state as unknown as Record<string, unknown> })
+        .upsert({ user_id: user.id, state: JSON.parse(JSON.stringify(state)) })
         .then(() => {});
     }, 400);
     return () => {
