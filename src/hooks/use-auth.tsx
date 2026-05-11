@@ -19,7 +19,6 @@ interface AuthCtx {
     displayName?: string,
   ) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
 }
 
 const Ctx = createContext<AuthCtx | null>(null);
