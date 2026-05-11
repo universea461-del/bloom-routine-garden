@@ -18,7 +18,7 @@ import { RewardBox } from "@/components/bloom/RewardBox";
 import { AchievementsSheet } from "@/components/bloom/AchievementsSheet";
 import { CHARACTERS } from "@/lib/bloom-types";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
       { title: "Bloom Routine — a cozy spring task garden" },
