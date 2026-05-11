@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
-import { Flame, Coins, Trophy, Gift } from "lucide-react";
+import { Flame, Coins, Trophy, Gift, LogOut } from "lucide-react";
 import { levelFromXp, MOOD_META, type BloomState, type Mood } from "@/lib/bloom-types";
+import { useAuth } from "@/hooks/use-auth";
 
 interface Props {
   state: BloomState;
