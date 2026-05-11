@@ -60,13 +60,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   };
 
-  const signInWithGoogle = async () => {
-    const { lovable } = await import("@/integrations/lovable");
-    await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-  };
-
   return (
     <Ctx.Provider
       value={{
@@ -76,7 +69,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signIn,
         signUp,
         signOut,
-        signInWithGoogle,
       }}
     >
       {children}
