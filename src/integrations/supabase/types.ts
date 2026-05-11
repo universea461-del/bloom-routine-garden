@@ -14,7 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      garden_states: {
+        Row: {
+          state: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          state?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          state?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
