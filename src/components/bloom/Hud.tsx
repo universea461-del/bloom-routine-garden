@@ -11,6 +11,7 @@ interface Props {
 }
 
 export function Hud({ state, todayMood, onOpenAchievements, onOpenRewards }: Props) {
+  const { signOut } = useAuth();
   const lvl = levelFromXp(state.xp);
   const pct = Math.max(4, Math.min(100, (lvl.into / Math.max(1, lvl.span)) * 100));
 
