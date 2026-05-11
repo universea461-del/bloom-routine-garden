@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ACHIEVEMENTS,
   CHARACTERS,
@@ -10,8 +10,8 @@ import {
   type Mood,
   type Task,
 } from "@/lib/bloom-types";
-
-const KEY = "bloom-routine-v2";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 
 const initial: BloomState = {
   tasks: [],
@@ -26,30 +26,6 @@ const initial: BloomState = {
   pendingRewards: 0,
 };
 
-function load(): BloomState {
-  if (typeof window === "undefined") return initial;
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) {
-      // migrate from v1 if present
-      const old = localStorage.getItem("bloom-routine-v1");
-      if (old) {
-        const parsed = JSON.parse(old);
-        return { ...initial, ...parsed };
-      }
-      return initial;
-    }
-    return { ...initial, ...JSON.parse(raw) };
-  } catch {
-    return initial;
-  }
-}
-
-function save(s: BloomState) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(KEY, JSON.stringify(s));
-}
-
 function checkAchievements(s: BloomState): { state: BloomState; newly: string[] } {
   const newly: string[] = [];
   const unlocked = new Set(s.achievements);
@@ -60,21 +36,56 @@ function checkAchievements(s: BloomState): { state: BloomState; newly: string[] 
     }
   }
   if (newly.length === 0) return { state: s, newly };
-  return { state: { ...s, achievements: Array.from(unlocked), coins: s.coins + newly.length * 5 }, newly };
+  return {
+    state: { ...s, achievements: Array.from(unlocked), coins: s.coins + newly.length * 5 },
+    newly,
+  };
 }
 
 export function useBloomStore() {
+  const { user } = useAuth();
   const [state, setState] = useState<BloomState>(initial);
   const [hydrated, setHydrated] = useState(false);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Load from Supabase when user changes
   useEffect(() => {
-    setState(load());
-    setHydrated(true);
-  }, []);
+    if (!user) {
+      setHydrated(false);
+      setState(initial);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("garden_states")
+        .select("state")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      const loaded = (data?.state as Partial<BloomState> | null) ?? null;
+      setState(loaded && Object.keys(loaded).length ? { ...initial, ...loaded } : initial);
+      setHydrated(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
+  // Debounced persist to Supabase
   useEffect(() => {
-    if (hydrated) save(state);
-  }, [state, hydrated]);
+    if (!user || !hydrated) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      supabase
+        .from("garden_states")
+        .upsert({ user_id: user.id, state: state as unknown as Record<string, unknown> })
+        .then(() => {});
+    }, 400);
+    return () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+    };
+  }, [state, hydrated, user]);
 
   const addTask = useCallback((t: Omit<Task, "id" | "createdAt" | "x" | "y">) => {
     const task: Task = {
