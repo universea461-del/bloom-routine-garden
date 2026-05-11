@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
-import { Flame, Coins, Trophy, Gift } from "lucide-react";
+import { Flame, Coins, Trophy, Gift, LogOut } from "lucide-react";
 import { levelFromXp, MOOD_META, type BloomState, type Mood } from "@/lib/bloom-types";
+import { useAuth } from "@/hooks/use-auth";
 
 interface Props {
   state: BloomState;
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export function Hud({ state, todayMood, onOpenAchievements, onOpenRewards }: Props) {
+  const { signOut } = useAuth();
   const lvl = levelFromXp(state.xp);
   const pct = Math.max(4, Math.min(100, (lvl.into / Math.max(1, lvl.span)) * 100));
 
@@ -100,6 +102,15 @@ export function Hud({ state, todayMood, onOpenAchievements, onOpenRewards }: Pro
         aria-label="Achievements"
       >
         <Trophy className="h-4 w-4 text-amber-500" />
+      </button>
+
+      <button
+        onClick={() => signOut()}
+        className="grid h-8 w-8 place-items-center rounded-full bg-white/70 transition hover:bg-white"
+        aria-label="Sign out"
+        title="Sign out"
+      >
+        <LogOut className="h-4 w-4 text-foreground/60" />
       </button>
     </motion.div>
   );
