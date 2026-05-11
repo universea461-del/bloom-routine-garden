@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import confetti from "canvas-confetti";
 import { Plus, BookHeart, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,11 @@ import { TaskModal } from "@/components/bloom/TaskModal";
 import { AddTaskSheet } from "@/components/bloom/AddTaskSheet";
 import { JournalSheet } from "@/components/bloom/JournalSheet";
 import { DailySummary } from "@/components/bloom/DailySummary";
+import { Hud } from "@/components/bloom/Hud";
+import { MoodPrompt } from "@/components/bloom/MoodPrompt";
+import { RewardBox } from "@/components/bloom/RewardBox";
+import { AchievementsSheet } from "@/components/bloom/AchievementsSheet";
+import { CHARACTERS } from "@/lib/bloom-types";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -56,11 +61,33 @@ function softConfetti() {
 }
 
 function BloomHome() {
-  const { state, hydrated, addTask, completeTask, removeTask, saveJournal } = useBloomStore();
+  const {
+    state,
+    hydrated,
+    todayMood,
+    addTask,
+    completeTask,
+    removeTask,
+    saveJournal,
+    setMood,
+    claimReward,
+  } = useBloomStore();
   const [openTaskId, setOpenTaskId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [journalOpen, setJournalOpen] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
+  const [achievementsOpen, setAchievementsOpen] = useState(false);
+  const [rewardsOpen, setRewardsOpen] = useState(false);
+  const [floatingGain, setFloatingGain] = useState<{ id: number; xp: number; coins: number } | null>(null);
+
+  // Auto-pop reward box when one is earned
+  const prevPending = state.pendingRewards;
+  useEffect(() => {
+    if (hydrated && state.pendingRewards > 0 && !rewardsOpen) {
+      setRewardsOpen(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prevPending]);
 
   const activeTasks = state.tasks.filter((t) => !t.completedAt);
   const today = useMemo(() => {
@@ -73,11 +100,18 @@ function BloomHome() {
   const openTask = state.tasks.find((t) => t.id === openTaskId) ?? null;
 
   const handleComplete = (id: string) => {
+    const task = state.tasks.find((t) => t.id === id);
     completeTask(id);
     softConfetti();
-    // Close after a short bloom moment
+    if (task) {
+      const meta = CHARACTERS[task.character];
+      setFloatingGain({ id: Date.now(), xp: meta.xp, coins: meta.coins });
+      setTimeout(() => setFloatingGain(null), 1600);
+    }
     setTimeout(() => setOpenTaskId(null), 700);
   };
+
+  const showMoodPrompt = hydrated && !todayMood;
 
   return (
     <div className="scene-gradient relative min-h-screen w-full overflow-hidden">
@@ -85,39 +119,49 @@ function BloomHome() {
       <Meadow blooms={state.blooms} />
 
       {/* Top bar */}
-      <header className="relative z-20 flex items-center justify-between px-6 pt-6">
-        <div>
-          <h1 className="font-display text-3xl text-shadow-soft sm:text-4xl">
-            Bloom Routine
-          </h1>
-          <p className="text-sm text-foreground/70">
-            {hydrated && activeTasks.length === 0
-              ? "Your meadow is waiting for a tiny seed 🌱"
-              : `${completedToday} bloomed · ${activeTasks.length} resting in the field`}
-          </p>
+      <header className="relative z-20 px-6 pt-6">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="font-display text-3xl text-shadow-soft sm:text-4xl">
+              Bloom Routine
+            </h1>
+            <p className="text-sm text-foreground/70">
+              {hydrated && activeTasks.length === 0
+                ? "Your meadow is waiting for a tiny seed 🌱"
+                : `${completedToday} bloomed · ${activeTasks.length} resting in the field`}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="rounded-full bg-white/70 backdrop-blur hover:bg-white"
+              onClick={() => setJournalOpen(true)}
+            >
+              <BookHeart className="mr-2 h-4 w-4" /> Journal
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="rounded-full bg-white/70 backdrop-blur hover:bg-white"
+              onClick={() => setSummaryOpen(true)}
+            >
+              <Sparkles className="mr-2 h-4 w-4" /> Today
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            className="rounded-full bg-white/70 backdrop-blur hover:bg-white"
-            onClick={() => setJournalOpen(true)}
-          >
-            <BookHeart className="mr-2 h-4 w-4" /> Journal
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            className="rounded-full bg-white/70 backdrop-blur hover:bg-white"
-            onClick={() => setSummaryOpen(true)}
-          >
-            <Sparkles className="mr-2 h-4 w-4" /> Today
-          </Button>
-        </div>
+        {hydrated && (
+          <Hud
+            state={state}
+            todayMood={todayMood}
+            onOpenAchievements={() => setAchievementsOpen(true)}
+            onOpenRewards={() => setRewardsOpen(true)}
+          />
+        )}
       </header>
 
       {/* Scene with characters */}
-      <main className="relative z-10 h-[calc(100vh-7rem)] w-full">
+      <main className="relative z-10 h-[calc(100vh-11rem)] w-full">
         <AnimatePresence>
           {activeTasks.map((t) => (
             <CharacterSprite
@@ -128,7 +172,7 @@ function BloomHome() {
           ))}
         </AnimatePresence>
 
-        {hydrated && state.tasks.length === 0 && (
+        {hydrated && state.tasks.length === 0 && !showMoodPrompt && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -145,6 +189,24 @@ function BloomHome() {
             </div>
           </motion.div>
         )}
+
+        {/* Floating XP/coins gain */}
+        <AnimatePresence>
+          {floatingGain && (
+            <motion.div
+              key={floatingGain.id}
+              initial={{ opacity: 0, y: 0, scale: 0.8 }}
+              animate={{ opacity: 1, y: -50, scale: 1 }}
+              exit={{ opacity: 0, y: -90 }}
+              transition={{ duration: 1.2 }}
+              className="pointer-events-none absolute left-1/2 top-1/3 z-30 -translate-x-1/2 rounded-full bg-white/85 px-4 py-2 font-display text-base shadow-lg backdrop-blur"
+            >
+              <span className="text-pink-500">+{floatingGain.xp} XP</span>
+              <span className="mx-2 text-foreground/30">·</span>
+              <span className="text-amber-500">+{floatingGain.coins} 🪙</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
       {/* Floating add button */}
@@ -165,6 +227,7 @@ function BloomHome() {
         <Plus className="h-7 w-7" strokeWidth={2.5} />
       </motion.button>
 
+      <MoodPrompt open={showMoodPrompt} onPick={setMood} />
       <TaskModal
         task={openTask}
         onClose={() => setOpenTaskId(null)}
@@ -178,6 +241,17 @@ function BloomHome() {
         onOpenChange={setSummaryOpen}
         todayTasks={today}
         onSave={saveJournal}
+      />
+      <RewardBox
+        open={rewardsOpen}
+        onOpenChange={setRewardsOpen}
+        pending={state.pendingRewards}
+        onClaim={claimReward}
+      />
+      <AchievementsSheet
+        open={achievementsOpen}
+        onOpenChange={setAchievementsOpen}
+        unlocked={state.achievements}
       />
     </div>
   );
