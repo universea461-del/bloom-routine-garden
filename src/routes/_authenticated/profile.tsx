@@ -150,22 +150,58 @@ function ProfilePage() {
               className="absolute -inset-2 rounded-full opacity-70 blur-xl"
               style={{ background: "linear-gradient(135deg, var(--bloom-pink), var(--bloom-lavender))" }}
             />
-            {profile?.avatar_url ? (
-              <img
-                src={profile.avatar_url}
-                alt={displayName || "avatar"}
-                referrerPolicy="no-referrer"
-                className="relative h-24 w-24 rounded-full border-4 border-white object-cover shadow-lg"
-              />
-            ) : (
-              <div
-                className="relative grid h-24 w-24 place-items-center rounded-full border-4 border-white text-3xl font-bold text-white shadow-lg"
-                style={{ background: "linear-gradient(135deg, oklch(0.78 0.14 350), oklch(0.78 0.13 305))" }}
-              >
-                {initial}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="group relative block h-24 w-24 overflow-hidden rounded-full border-4 border-white shadow-lg focus:outline-none focus:ring-2 focus:ring-pink-300"
+              aria-label="Change avatar"
+            >
+              {profile?.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt={displayName || "avatar"}
+                  referrerPolicy="no-referrer"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div
+                  className="grid h-full w-full place-items-center text-3xl font-bold text-white"
+                  style={{ background: "linear-gradient(135deg, oklch(0.78 0.14 350), oklch(0.78 0.13 305))" }}
+                >
+                  {initial}
+                </div>
+              )}
+              <div className="absolute inset-0 grid place-items-center bg-black/40 text-white opacity-0 transition group-hover:opacity-100">
+                {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Camera className="h-5 w-5" />}
               </div>
-            )}
+              {uploading && (
+                <div className="absolute inset-0 grid place-items-center bg-black/40 text-white">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                </div>
+              )}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarFile}
+            />
           </div>
+
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-foreground/70 transition hover:bg-white disabled:opacity-50"
+          >
+            <Camera className="h-3.5 w-3.5" />
+            {uploading ? "Uploading…" : profile?.avatar_url ? "Change photo" : "Upload photo"}
+          </button>
+          {uploadError && (
+            <div className="mt-2 text-xs text-red-500">{uploadError}</div>
+          )}
 
           <h1 className="font-display mt-4 text-2xl font-bold text-foreground">
             {displayName || "Little Gardener"}
