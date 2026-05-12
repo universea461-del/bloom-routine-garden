@@ -50,6 +50,21 @@ function AuthPage() {
     navigate({ to: "/" });
   };
 
+  const onGoogle = async () => {
+    setBusy(true);
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    if (result.error) {
+      setBusy(false);
+      toast.error(result.error.message);
+      return;
+    }
+    if (result.redirected) return;
+    toast.success("Welcome 🌿");
+    navigate({ to: "/" });
+  };
+
   return (
     <div className="scene-gradient relative min-h-screen w-full overflow-hidden">
       <SkyScene />
