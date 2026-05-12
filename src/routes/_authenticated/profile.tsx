@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { ArrowLeft, Mail, Sparkles, Save, Check } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowLeft, Mail, Sparkles, Save, Check, Camera, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useBloomStore } from "@/hooks/use-bloom-store";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,6 +56,40 @@ function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleAvatarFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !user) return;
+    if (!file.type.startsWith("image/")) {
+      setUploadError("Please choose an image file.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError("Image must be under 5 MB.");
+      return;
+    }
+    setUploadError(null);
+    setUploading(true);
+    const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+    const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage
+      .from("avatars")
+      .upload(path, file, { upsert: true, contentType: file.type });
+    if (upErr) {
+      setUploadError(upErr.message);
+      setUploading(false);
+      return;
+    }
+    const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+    const url = `${pub.publicUrl}?v=${Date.now()}`;
+    await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
+    setProfile((p) => (p ? { ...p, avatar_url: url } : { display_name: null, email: null, avatar_url: url, provider: null, preferences: null }));
+    setUploading(false);
+  }
 
   useEffect(() => {
     if (!user) return;
@@ -116,22 +150,58 @@ function ProfilePage() {
               className="absolute -inset-2 rounded-full opacity-70 blur-xl"
               style={{ background: "linear-gradient(135deg, var(--bloom-pink), var(--bloom-lavender))" }}
             />
-            {profile?.avatar_url ? (
-              <img
-                src={profile.avatar_url}
-                alt={displayName || "avatar"}
-                referrerPolicy="no-referrer"
-                className="relative h-24 w-24 rounded-full border-4 border-white object-cover shadow-lg"
-              />
-            ) : (
-              <div
-                className="relative grid h-24 w-24 place-items-center rounded-full border-4 border-white text-3xl font-bold text-white shadow-lg"
-                style={{ background: "linear-gradient(135deg, oklch(0.78 0.14 350), oklch(0.78 0.13 305))" }}
-              >
-                {initial}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="group relative block h-24 w-24 overflow-hidden rounded-full border-4 border-white shadow-lg focus:outline-none focus:ring-2 focus:ring-pink-300"
+              aria-label="Change avatar"
+            >
+              {profile?.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt={displayName || "avatar"}
+                  referrerPolicy="no-referrer"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div
+                  className="grid h-full w-full place-items-center text-3xl font-bold text-white"
+                  style={{ background: "linear-gradient(135deg, oklch(0.78 0.14 350), oklch(0.78 0.13 305))" }}
+                >
+                  {initial}
+                </div>
+              )}
+              <div className="absolute inset-0 grid place-items-center bg-black/40 text-white opacity-0 transition group-hover:opacity-100">
+                {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Camera className="h-5 w-5" />}
               </div>
-            )}
+              {uploading && (
+                <div className="absolute inset-0 grid place-items-center bg-black/40 text-white">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                </div>
+              )}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarFile}
+            />
           </div>
+
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-foreground/70 transition hover:bg-white disabled:opacity-50"
+          >
+            <Camera className="h-3.5 w-3.5" />
+            {uploading ? "Uploading…" : profile?.avatar_url ? "Change photo" : "Upload photo"}
+          </button>
+          {uploadError && (
+            <div className="mt-2 text-xs text-red-500">{uploadError}</div>
+          )}
 
           <h1 className="font-display mt-4 text-2xl font-bold text-foreground">
             {displayName || "Little Gardener"}
