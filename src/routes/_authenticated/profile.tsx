@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { ArrowLeft, Mail, Sparkles, Save, Check } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowLeft, Mail, Sparkles, Save, Check, Camera, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useBloomStore } from "@/hooks/use-bloom-store";
 import { supabase } from "@/integrations/supabase/client";
