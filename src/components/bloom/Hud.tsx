@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Flame, Coins, Trophy, Gift, LogOut } from "lucide-react";
+import { Flame, Coins, Trophy, Gift, LogOut, User } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { levelFromXp, MOOD_META, type BloomState, type Mood } from "@/lib/bloom-types";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -103,6 +104,15 @@ export function Hud({ state, todayMood, onOpenAchievements, onOpenRewards }: Pro
       >
         <Trophy className="h-4 w-4 text-amber-500" />
       </button>
+
+      <Link
+        to="/profile"
+        className="grid h-8 w-8 place-items-center rounded-full bg-white/70 transition hover:bg-white"
+        aria-label="Profile"
+        title="Profile"
+      >
+        <User className="h-4 w-4 text-foreground/60" />
+      </Link>
 
       <button
         onClick={() => signOut()}
