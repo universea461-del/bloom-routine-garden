@@ -1,7 +1,11 @@
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Users, Circle } from "lucide-react";
+import { useEffect, useState } from "react";
 
-const DISCORD_INVITE = "https://discord.gg/DUAXhuYXy";
+const DISCORD_INVITE_CODE = "DUAXhuYXy";
+const DISCORD_INVITE = `https://discord.gg/${DISCORD_INVITE_CODE}`;
+
+type Stats = { members: number; online: number } | null;
 
 function DiscordIcon({ className }: { className?: string }) {
   return (
@@ -12,6 +16,29 @@ function DiscordIcon({ className }: { className?: string }) {
 }
 
 export function DiscordCommunity() {
+  const [stats, setStats] = useState<Stats>(null);
+  const [loadingStats, setLoadingStats] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(
+      `https://discord.com/api/v10/invites/${DISCORD_INVITE_CODE}?with_counts=true&with_expiration=false`,
+    )
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        setStats({
+          members: data.approximate_member_count ?? 0,
+          online: data.approximate_presence_count ?? 0,
+        });
+      })
+      .catch(() => {})
+      .finally(() => !cancelled && setLoadingStats(false));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <section className="relative w-full px-6 py-16">
       <motion.div
@@ -91,6 +118,41 @@ export function DiscordCommunity() {
               Meet creators, builders, and early supporters. Stay close to future
               updates and exclusive launches — softly, and at your own pace.
             </p>
+
+            {/* Live stats card */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="mt-6 flex items-stretch gap-2 rounded-2xl border border-white/40 bg-white/55 px-3 py-2 shadow-[0_10px_30px_-15px_oklch(0.55_0.22_285_/_0.45)] backdrop-blur-md"
+            >
+              <div className="flex items-center gap-2 px-3 py-1.5">
+                <Users className="h-4 w-4 text-foreground/60" />
+                <div className="text-left leading-tight">
+                  <div className="text-sm font-semibold tabular-nums">
+                    {loadingStats ? "—" : stats ? stats.members.toLocaleString() : "—"}
+                  </div>
+                  <div className="text-[10px] uppercase tracking-wider text-foreground/55">
+                    members
+                  </div>
+                </div>
+              </div>
+              <div className="w-px bg-foreground/10" />
+              <div className="flex items-center gap-2 px-3 py-1.5">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
+                  <Circle className="h-2.5 w-2.5 fill-emerald-500 text-emerald-500" />
+                </span>
+                <div className="text-left leading-tight">
+                  <div className="text-sm font-semibold tabular-nums">
+                    {loadingStats ? "—" : stats ? stats.online.toLocaleString() : "—"}
+                  </div>
+                  <div className="text-[10px] uppercase tracking-wider text-foreground/55">
+                    online now
+                  </div>
+                </div>
+              </div>
+            </motion.div>
 
             {/* Glowing button */}
             <motion.a
