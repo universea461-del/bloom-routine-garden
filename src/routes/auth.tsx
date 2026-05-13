@@ -173,6 +173,8 @@ function AuthPage() {
             </button>
           </div>
         </motion.div>
+
+        <DiscordCommunity />
       </div>
     </div>
   );
