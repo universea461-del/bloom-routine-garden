@@ -21,21 +21,39 @@ export function DiscordCommunity() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(
-      `https://discord.com/api/v10/invites/${DISCORD_INVITE_CODE}?with_counts=true&with_expiration=false`,
-    )
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
+
+    const fetchStats = async () => {
+      try {
+        const r = await fetch(
+          `https://discord.com/api/v10/invites/${DISCORD_INVITE_CODE}?with_counts=true&with_expiration=false`,
+        );
+        if (!r.ok) return;
+        const data = await r.json();
         if (cancelled || !data) return;
         setStats({
           members: data.approximate_member_count ?? 0,
           online: data.approximate_presence_count ?? 0,
         });
-      })
-      .catch(() => {})
-      .finally(() => !cancelled && setLoadingStats(false));
+      } catch {
+        // ignore transient errors; next tick will retry
+      } finally {
+        if (!cancelled) setLoadingStats(false);
+      }
+    };
+
+    fetchStats();
+    const REFRESH_MS = 90_000; // refresh every 90s
+    const interval = setInterval(fetchStats, REFRESH_MS);
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") fetchStats();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
     return () => {
       cancelled = true;
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
 
