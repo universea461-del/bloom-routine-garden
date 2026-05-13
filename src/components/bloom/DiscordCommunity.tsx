@@ -16,6 +16,29 @@ function DiscordIcon({ className }: { className?: string }) {
 }
 
 export function DiscordCommunity() {
+  const [stats, setStats] = useState<Stats>(null);
+  const [loadingStats, setLoadingStats] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(
+      `https://discord.com/api/v10/invites/${DISCORD_INVITE_CODE}?with_counts=true&with_expiration=false`,
+    )
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        setStats({
+          members: data.approximate_member_count ?? 0,
+          online: data.approximate_presence_count ?? 0,
+        });
+      })
+      .catch(() => {})
+      .finally(() => !cancelled && setLoadingStats(false));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <section className="relative w-full px-6 py-16">
       <motion.div
