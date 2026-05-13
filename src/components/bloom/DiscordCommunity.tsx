@@ -1,7 +1,11 @@
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Users, Circle } from "lucide-react";
+import { useEffect, useState } from "react";
 
-const DISCORD_INVITE = "https://discord.gg/DUAXhuYXy";
+const DISCORD_INVITE_CODE = "DUAXhuYXy";
+const DISCORD_INVITE = `https://discord.gg/${DISCORD_INVITE_CODE}`;
+
+type Stats = { members: number; online: number } | null;
 
 function DiscordIcon({ className }: { className?: string }) {
   return (
