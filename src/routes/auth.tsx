@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { SkyScene } from "@/components/bloom/SkyScene";
+import { DiscordCommunity } from "@/components/bloom/DiscordCommunity";
 import { toast } from "sonner";
 import { lovable } from "@/integrations/lovable";
 
