@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { SkyScene } from "@/components/bloom/SkyScene";
+import { DiscordCommunity } from "@/components/bloom/DiscordCommunity";
 import { toast } from "sonner";
 import { lovable } from "@/integrations/lovable";
 
@@ -68,7 +69,7 @@ function AuthPage() {
   return (
     <div className="scene-gradient relative min-h-screen w-full overflow-hidden">
       <SkyScene />
-      <div className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10">
+      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6 py-10">
         <motion.div
           initial={{ opacity: 0, y: 14, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -172,6 +173,8 @@ function AuthPage() {
             </button>
           </div>
         </motion.div>
+
+        <DiscordCommunity />
       </div>
     </div>
   );
