@@ -17,6 +17,7 @@ import { MoodPrompt } from "@/components/bloom/MoodPrompt";
 import { RewardBox } from "@/components/bloom/RewardBox";
 import { AchievementsSheet } from "@/components/bloom/AchievementsSheet";
 import { CHARACTERS } from "@/lib/bloom-types";
+import { FaqSection, FAQS } from "@/components/bloom/FaqSection";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
