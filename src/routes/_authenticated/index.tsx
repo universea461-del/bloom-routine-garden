@@ -133,7 +133,7 @@ function BloomHome() {
   const showMoodPrompt = hydrated && !todayMood;
 
   return (
-    <div className="scene-gradient relative min-h-screen w-full overflow-hidden">
+    <div className="scene-gradient relative min-h-screen w-full overflow-x-hidden">
       <SkyScene />
       <Meadow blooms={state.blooms} />
 
