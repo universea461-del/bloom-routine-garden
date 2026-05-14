@@ -228,6 +228,8 @@ function BloomHome() {
         </AnimatePresence>
       </main>
 
+      <FaqSection />
+
       {/* Floating add button */}
       <motion.button
         initial={{ scale: 0 }}
