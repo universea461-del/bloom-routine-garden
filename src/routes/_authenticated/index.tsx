@@ -21,14 +21,18 @@ import { CHARACTERS } from "@/lib/bloom-types";
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
-      { title: "Bloom Routine — a cozy spring task garden" },
+      { title: "Daily Planner App & Daily Routine App — Bloom Routine" },
       {
         name: "description",
         content:
-          "Turn your daily tasks into cute characters that bloom into a peaceful spring meadow.",
+          "Bloom Routine is a cozy daily planner app and daily routine app that turns your tasks and habits into a calm, animated spring garden.",
       },
-      { property: "og:title", content: "Bloom Routine" },
-      { property: "og:description", content: "A calm, animated way to grow your day." },
+      { property: "og:title", content: "Daily Planner App & Daily Routine App — Bloom Routine" },
+      {
+        property: "og:description",
+        content:
+          "A cozy daily planner and daily routine app that grows a peaceful garden as you finish your day.",
+      },
     ],
   }),
   component: BloomHome,
