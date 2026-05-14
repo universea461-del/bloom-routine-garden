@@ -17,6 +17,7 @@ import { MoodPrompt } from "@/components/bloom/MoodPrompt";
 import { RewardBox } from "@/components/bloom/RewardBox";
 import { AchievementsSheet } from "@/components/bloom/AchievementsSheet";
 import { CHARACTERS } from "@/lib/bloom-types";
+import { FaqSection, FAQS } from "@/components/bloom/FaqSection";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
@@ -32,6 +33,20 @@ export const Route = createFileRoute("/_authenticated/")({
         property: "og:description",
         content:
           "A cozy daily planner and daily routine app that grows a peaceful garden as you finish your day.",
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: FAQS.map((f) => ({
+            "@type": "Question",
+            name: f.q,
+            acceptedAnswer: { "@type": "Answer", text: f.a },
+          })),
+        }),
       },
     ],
   }),
@@ -118,7 +133,7 @@ function BloomHome() {
   const showMoodPrompt = hydrated && !todayMood;
 
   return (
-    <div className="scene-gradient relative min-h-screen w-full overflow-hidden">
+    <div className="scene-gradient relative min-h-screen w-full overflow-x-hidden">
       <SkyScene />
       <Meadow blooms={state.blooms} />
 
@@ -212,6 +227,8 @@ function BloomHome() {
           )}
         </AnimatePresence>
       </main>
+
+      <FaqSection />
 
       {/* Floating add button */}
       <motion.button
